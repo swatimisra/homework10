@@ -1,0 +1,127 @@
+---
+title: "Homework10"
+author: "Swati Misra (SM83264)"
+date: "2024-04-25"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(moderndive)
+library(ggplot2)
+library(dplyr)
+library(mosaic)
+library(effectsize)
+
+```
+
+GitHub Repo: https://github.com/swatimisra/homework10
+
+```{r, echo = FALSE}
+redline <- read.csv("redlining.csv")
+groceries <- read.csv("groceries.csv")
+```
+
+### Question 1
+
+
+Question: Is there an association between the number of FAIR policies and the racial/ethnic composition of a ZIP code after adjusting for fire, age, and income?
+
+Approach: To answer this question, I used a linear regression model and created a regression table. I used the moderndive library to gain access to the get_regression_table() function. 
+
+Results:
+
+```{r, echo = FALSE}
+lm1_redline = lm(policies ~ minority + fire + age + income, data=redline)
+get_regression_table(lm1_redline)
+```
+
+Conclusion: As we can see above, the confidence intervals for both age (-0.002, 0.013) and income (-0.094, 0.062) have 0 included. This means that they are not statistically significant and cannot be used to explain the association with policies. The confidence intervals for fire (0.004, 0.04) and minority (0.003, 0.014) do not include 0 which means they are statistically significant. The income variable has a negative coefficient of -0.016 which means it has a negative effect on the number of policies. However, minority, fire, and age have positive coefficients with 0.008, 0.022, 0.006 which means they have positive effects on the number of policies. Based on this information, we can conclude that there is an association between the number of policies and the racial/ethnic composition of ZIP code. 
+
+### Question 2
+
+# Part A
+
+```{r, echo = FALSE}
+grocery_avg <- groceries %>%
+  group_by(Store) %>%
+  summarize(avg_price = mean(Price))
+
+ggplot(grocery_avg) +
+  geom_col(aes(x= factor(Store), y = avg_price)) + coord_flip()
+
+```
+
+This plot shows price differences between stores with the x axis as the average price and the y axis as the stores. 
+
+# Part B
+```{r, echo = FALSE}
+prod <- groceries %>%
+  group_by(Product) %>%
+  summarize(StoresSelling = n_distinct(Store,City))
+
+ggplot(prod) +
+  geom_col(aes(x= factor(Product), y = StoresSelling)) + coord_flip()
+
+```
+
+This plot shows the number of stores selling each product. The number of stores is the x axis while the products are on the y axis. 
+
+
+# Part C
+
+```{r, echo = FALSE, results = 'hide'}
+
+groceries$Type <- factor(groceries$Type)
+groceries$Type <- relevel(groceries$Type, ref = "Grocery")
+lm1_grocery = lm(Price ~ Product + Type, data=groceries)
+get_regression_table(lm1_grocery)
+```
+
+Compared with ordinary grocery stores (like Albertsons, HEB, Krogers), convenience stores charge somewhere between 0.413 and 0.915 dollars more for the same product. 
+
+# Part D
+
+```{r, echo = FALSE, results = 'hide'}
+lm2_grocery = lm(Price ~ Product + Store, data=groceries)
+get_regression_table(lm2_grocery)
+```
+
+The two stores with the lowest prices are Walmart and Kroger Fresh Fare when comparing the same product. The two stores with the highest prices when comparing the same product are Whole Foods and Wheatsville Food Co-Op. 
+
+# Part E
+
+I believe Central Market charges a similar amount to HEB for the same product. This is because their coefficients do not have that big of a difference. Central Market has a coefficient of -0.573 and HEB has a coefficient of -0.646. Central Market charges very slightly more than HEB. This difference is relatively small when compared to other differences in coefficients. For example, Walgreens has a coefficient of 0.215 while Kroger has a coefficient of -0.703. 
+
+# Part F
+
+```{r, echo = FALSE, results = 'hide'}
+mutated <- groceries %>%
+  mutate(Income10K = floor(Income / 10000) + 1)
+lm3_grocery = lm(Price ~ Product + Income10K, data=mutated)
+get_regression_table(lm3_grocery)
+standardize_parameters(lm3_grocery)
+
+```
+
+The Income10K coefficient is -0.013, which means that customers in poorer ZIP codes seem to pay more for the same product on average. As the income in a ZIP code increases by $10,000, the average price paid for the same product decreases by $0.01. This suggests that consumers in poorer ZIP codes tend to pay more for the same product on average. 
+
+A one-standard deviation increase in the income of a ZIP code seems to be associated with a -0.03 standard deviation change in the price that consumers in that ZIP code expect to pay for the same product. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
